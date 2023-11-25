@@ -10,7 +10,7 @@ byte fourA = 6;
 #define CSN   8
 
 RF24 radio(CE, CSN);
-const byte address[6] = "000001";
+const byte address[6] = "00001";
 
 byte LXVALUE = 0;
 byte LYVALUE = 0;
@@ -28,7 +28,7 @@ void setup() {
   
   radio.begin();
   radio.openReadingPipe(0, address);
-  radio.setPALevel(RF24_PA_MIN);
+  //radio.setPALevel(RF24_PA_MIN);
   radio.startListening();
 }
 void loop() {
@@ -50,26 +50,55 @@ void loop() {
     (00 00 00 LX) parsed out the 2nd byte
     */
 
-    RXVALUE = text >> 32  & 0xFF;
-    RYVALUE = text >> 16  & 0xFF; 
-    LXVALUE = text >> 8   & 0xFF;
+    RXVALUE = text >> 8   & 0xFF;
     LYVALUE = text        & 0xFF;
 
-    Serial.println(LYVALUE);
+    Serial.println(RXVALUE);
   }
 
 
-  /*
-  Values sent from transmitter are from:
-  0 (backwards)
-  5 (stop)
-  10 (forwards)
-  */
+  
 
-  LYVALUE = 10;
-  RXVALUE = 0;
-  move(LYVALUE, RXVALUE);
 
+// LYVALUE 
+// 0; FULL POWER
+// 10; BACKWARD
+
+// RXVALUE
+// 0: RIGHT
+// 10: LEFT
+
+
+//   /*
+//   Values sent from transmitter are from:
+//   0 (backwards)
+//   5 (stop)
+//   10 (forwards)
+//   */
+
+// // stopped
+//   LYVALUE = 5;
+//   RXVALUE = 5;
+//   move(LYVALUE, RXVALUE);
+//   delay(1000);
+
+// // forward
+//   LYVALUE = 10;
+//   RXVALUE = 5;
+//   move(LYVALUE, RXVALUE);
+//   delay(1000);
+
+// // forward right
+//   LYVALUE = 10;
+//   RXVALUE = 0;
+//   move(LYVALUE, RXVALUE);
+//   delay(1000);
+
+// // forward left
+//   LYVALUE = 10;
+//   RXVALUE = 10;
+//   move(LYVALUE, RXVALUE);
+//   delay(1000);
 }
 
 // RX = 0;  TURN LEFT
