@@ -37,28 +37,11 @@ void loop() {
     int text;
     radio.read(&text, sizeof(text));
 
-    /*
-    Parsing the data:
-    text = [LYVALUE, LXVALUE, RYVALUE, RXVALUE]
-    This is 4 bytes in total which are shifted accordingly
-    and then bitwise AND with an 8 bit mask to trim off the 
-    unneeded data
-    Example: 
-    (data is sent backwards so the LSB is actually the first byte)
-    (RX RY LX LY) >> 8 =
-    (00 RX RY LX) & FF =
-    (00 00 00 LX) parsed out the 2nd byte
-    */
-
     RXVALUE = text >> 8   & 0xFF;
     LYVALUE = text        & 0xFF;
 
-    Serial.println(RXVALUE);
+    move(LYVALUE, RXVALUE);
   }
-
-
-  
-
 
 // LYVALUE 
 // 0; FULL POWER
@@ -67,60 +50,24 @@ void loop() {
 // RXVALUE
 // 0: RIGHT
 // 10: LEFT
-
-
-//   /*
-//   Values sent from transmitter are from:
-//   0 (backwards)
-//   5 (stop)
-//   10 (forwards)
-//   */
-
-// // stopped
-//   LYVALUE = 5;
-//   RXVALUE = 5;
-//   move(LYVALUE, RXVALUE);
-//   delay(1000);
-
-// // forward
-//   LYVALUE = 10;
-//   RXVALUE = 5;
-//   move(LYVALUE, RXVALUE);
-//   delay(1000);
-
-// // forward right
-//   LYVALUE = 10;
-//   RXVALUE = 0;
-//   move(LYVALUE, RXVALUE);
-//   delay(1000);
-
-// // forward left
-//   LYVALUE = 10;
-//   RXVALUE = 10;
-//   move(LYVALUE, RXVALUE);
-//   delay(1000);
 }
-
-// RX = 0;  TURN LEFT
-// RX = 5;  GO FORWARD
-// RX = 10; TURN RIGHT
 
 
 void forwardMotion (byte RXVALUE) {
-  if (RXVALUE <= 3) {       // TURN LEFT
-    analogWrite(oneA, 0);
-    analogWrite(twoA, 100);
-    analogWrite(threeA, 0);
-    analogWrite(fourA, 255);
-  }
-  else if (RXVALUE <= 7) {  //GO FORWARD
-    forward();
-  }
-  else if (RXVALUE <= 10) { //TURN RIGHT
+  if (RXVALUE <= 3) {       // TURN RIGHT
     analogWrite(oneA, 0);
     analogWrite(twoA, 255);
     analogWrite(threeA, 0);
     analogWrite(fourA, 100);
+  }
+  else if (RXVALUE <= 7) {  //GO FORWARD
+    forward();
+  }
+  else if (RXVALUE <= 10) { //TURN LEFT
+    analogWrite(oneA, 0);
+    analogWrite(twoA, 100);
+    analogWrite(threeA, 0);
+    analogWrite(fourA, 255);
   }
   else { 
     forward();
@@ -129,18 +76,18 @@ void forwardMotion (byte RXVALUE) {
 
 void backwardMotion(byte RXVALUE) {
   if (RXVALUE <= 3) { // TURN LEFT
-    analogWrite(oneA, 100);
+    analogWrite(oneA, 255);
     analogWrite(twoA, 0);
-    analogWrite(threeA, 255);
+    analogWrite(threeA, 100);
     analogWrite(fourA, 0);
   }
   else if (RXVALUE <= 7) { //GO BACKWARD
     backward();
   }
   else if (RXVALUE <= 10) { //TURN RIGHT
-    analogWrite(oneA, 255);
+    analogWrite(oneA, 100);
     analogWrite(twoA, 0);
-    analogWrite(threeA, 100);
+    analogWrite(threeA, 255);
     analogWrite(fourA, 0);
   }
   else { 
@@ -150,7 +97,7 @@ void backwardMotion(byte RXVALUE) {
 
 void move(byte LYVALUE, byte RXVALUE) {
   if (LYVALUE <= 3){      //0-3 are backwards
-    backwardMotion(RXVALUE);
+    forwardMotion(RXVALUE);
     delay(10);
   }
   else if (LYVALUE <=7){  //4-7 are stopped
@@ -158,7 +105,7 @@ void move(byte LYVALUE, byte RXVALUE) {
     delay(10);
   }
   else if (LYVALUE <= 10) { //8-10 are forwards
-    forwardMotion(RXVALUE);
+    backwardMotion(RXVALUE);
     delay(10);
   }
   else{
