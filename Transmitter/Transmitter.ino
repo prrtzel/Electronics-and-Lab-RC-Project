@@ -1,12 +1,10 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-#include <LiquidCrystal_I2C.h>
-#include  <Wire.h>
 
-#define LVRX  A0  // Arduino pin connected to LVRX pin
-#define LVRY  A1  // Arduino pin connected to LVRY pin
-#define LSW   5  // D4
+#define LVRX  A1  // Arduino pin connected to LVRX pin
+#define LVRY  A0  // Arduino pin connected to LVRY pin
+#define LSW   7  // D4
 
 #define RVRX  A3  // Arduino pin connected to RVRX pin
 #define RVRY  A2  // Arduino pin connected to RVRY pin
@@ -15,21 +13,19 @@
 #define LED1  5  //LED's D2
 #define LED2  6  // D3
 
-#define CE    7  //Chip Enable Chip Select
-#define CSN   8
+#define CE    10  //Chip Enable Chip Select
+#define CSN   11
 
 typedef uint8_t byte;
-typedef uint16_t word;
 
 RF24 radio(CE, CSN);
 const byte address[6] = "69420";
 
-byte dataBuffer[] = {0, 0, 0, 0};
-
-int RYVALUE = 0;
-int RXVALUE = 0;
-int LYVALUE = 0;
-int LXVALUE = 0;
+  byte LXValue = 0;
+  byte LYValue = 0;
+  byte RXValue = 0;
+  byte RYValue = 0;
+  byte dataBuffer[] = {0, 0, 0, 0};
 
 void setup() {
 
@@ -56,33 +52,14 @@ void setup() {
 
 void loop() {
 
-  //change byte to map function, as the 1024 is being truncated
+  dataBuffer[0] = analogRead(LVRY) / 100;
+  dataBuffer[1] = analogRead(LVRX) / 100;
 
-  RYVALUE = lowByte(analogRead(RVRY) / 100);
-  RXVALUE = lowByte(analogRead(RVRX) / 100);
-  LYVALUE = lowByte(analogRead(LVRY) / 100);
-  LXVALUE = lowByte(analogRead(LVRX) / 100);
+  dataBuffer[2] = analogRead(RVRY) / 100;
+  dataBuffer[3] = analogRead(RVRX) / 100;
 
-  
-  dataBuffer[0] = RYVALUE;  // currently not functional
-  dataBuffer[1] = RXVALUE;  // currently not functional
-  dataBuffer[2] = LYVALUE;
-  dataBuffer[3] = LXVALUE;
+  Serial.println(dataBuffer[0]);
 
-  Serial.println();
-  for (int i = 0; i < 4; i++)
-  {
-    Serial.println(dataBuffer[i]);
-  }
-  Serial.println();
+  radio.write(&dataBuffer[0], sizeof(dataBuffer));
 
-
-  radio.write(&dataBuffer, sizeof(dataBuffer) * sizeof(byte));
-  delay(100);
 }
-
-
-
-
-
-
